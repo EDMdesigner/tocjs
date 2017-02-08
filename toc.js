@@ -108,6 +108,8 @@ function toc(element) {
 		var text = document.createTextNode(elementDescriptor.element.innerText);
 		link.appendChild(text);
 
+		elementDescriptor.link = link;
+
 		li.appendChild(link);
 
 		if (elementDescriptor.children.length > 0) {
@@ -123,5 +125,32 @@ function toc(element) {
 
 	var tocUl = document.createElement("ul");
 	tocUl.appendChild(createList(root));
+
+	var activeElement = root;
+	activeElement.link.className = "active";
+	function setActiveFlag(elementDescriptor) {
+		var bBox = elementDescriptor.element.getBoundingClientRect();
+
+		var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+		var clientTop = document.documentElement.clientTop || document.body.clientTop || 0;
+
+		var top  = bBox.top +  scrollTop - clientTop;
+
+		console.log(elementDescriptor.element, bBox.top, scrollTop, clientTop, top);
+
+		if (bBox.top < 100 && bBox.top > 0) {
+			activeElement.link.className = "";
+			activeElement = elementDescriptor;
+			activeElement.link.className = "active";
+			return;
+		}
+
+		elementDescriptor.children.forEach(setActiveFlag);
+	}
+
+	addEventListener("scroll", function() {
+		setActiveFlag(root);
+	});
+
 	return tocUl;
 }
