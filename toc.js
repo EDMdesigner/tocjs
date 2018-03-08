@@ -128,25 +128,38 @@ function toc(element) {
 
 	var activeElement = root;
 	activeElement.link.className = "active";
-	function setActiveFlag(elementDescriptor) {
-		var bBox = elementDescriptor.element.getBoundingClientRect();
 
+	function setActiveFlag(elementDescriptor) {
 		var scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
 		var clientTop = document.documentElement.clientTop || document.body.clientTop || 0;
-
-		var top  = bBox.top +  scrollTop - clientTop;
-
-		console.log(elementDescriptor.element, bBox.top, scrollTop, clientTop, top);
-
-		if (bBox.top < 100 && bBox.top > 0) {
-			activeElement.link.className = "";
-			activeElement = elementDescriptor;
-			activeElement.link.className = "active";
-			return;
+		var closest = 1e5;
+		function getActive(elementDescriptor) {
+			var bBox = elementDescriptor.element.getBoundingClientRect();
+			console.log(elementDescriptor.element, bBox.top);
+			if (Math.abs(bBox.top) < Math.abs(closest)) {
+				closest = bBox.top;
+			}
+			elementDescriptor.children.forEach(getActive);
+			
 		}
-
-		elementDescriptor.children.forEach(setActiveFlag);
+		getActive(root);
+		console.log(closest);
+		
+		function setActive (elementDescriptor) {
+			var bBox = elementDescriptor.element.getBoundingClientRect();
+			if (bBox.top === closest)  {	
+				activeElement.link.className = "";
+				activeElement = elementDescriptor;
+				activeElement.link.className = "active";
+				console.log(activeElement.element);
+				return;
+			}
+			elementDescriptor.children.forEach(setActive);
+		}
+		setActive(root);
+		
 	}
+		
 
 	addEventListener("scroll", function() {
 		setActiveFlag(root);
